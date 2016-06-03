@@ -82,13 +82,6 @@ public class HBaseUtil {
             table = connection.getTable(TableName.valueOf(tableName));
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if (table != null) {
-                try {
-                    table.close();
-                } catch (IOException e) {
-                }
-            }
         }
         return table;
     }

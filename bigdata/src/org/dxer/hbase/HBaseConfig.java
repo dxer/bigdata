@@ -1,6 +1,7 @@
 package org.dxer.hbase;
 
 import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -21,11 +22,11 @@ public class HBaseConfig {
 
     private static Map<String, String> config = new HashMap<String, String>();
 
-    private static Properties prop = new Properties();
+    private static Properties props = new Properties();
     static {
         try {
             InputStream is = HBaseConfig.class.getResourceAsStream("hbase.properties");
-            prop.load(is);
+            props.load(is);
             if (is != null) {
                 is.close();
             }
@@ -35,7 +36,7 @@ public class HBaseConfig {
     }
 
     public static String getValue(String key) {
-        String value = prop.getProperty(key);
+        String value = props.getProperty(key);
 
         return value;
     }
@@ -59,28 +60,35 @@ public class HBaseConfig {
             configuration = HBaseConfiguration.create();
         }
 
-        System.out.println(getValue("hbase.zookeeper.quorum"));
-        configuration.set("hbase.zookeeper.quorum", getValue("hbase.zookeeper.quorum"));
+        if (props != null && props.size() > 0) {
+            Enumeration<?> enum1 = props.propertyNames();// 得到配置文件的名字
+            while (enum1.hasMoreElements()) {
+                String strKey = (String) enum1.nextElement();
+                String strValue = props.getProperty(strKey);
+                configuration.set(strKey, strValue);
+            }
+        }
 
         if (isKerberos()) {
             configuration.set("hadoop.security.authorization", "true");
             configuration.set("hadoop.security.authentication", "kerberos");
             configuration.set("hbase.rpc.engine", "org.apache.hadoop.hbase.ipc.SecureRpcEngine");
-            configuration.set("hbase.master.kerberos.principal", "hbase/_HOST@E.189.CN");
-            configuration.set("hbase.regionserver.kerberos.principal", "hbase/_HOST@E.189.CN");
+            configuration.set("hbase.master.kerberos.principal", "hbase/_HOST@TEST.CN");
+            configuration.set("hbase.regionserver.kerberos.principal", "hbase/_HOST@TEST.CN");
             configuration.set("hbase.security.authorization=", "true");
             configuration.set("hbase.security.authentication", "kerberos");
         }
 
-//        configuration.set("hbase.zookeeper.property.clientPort", getValue("hbase.zookeeper.property.clientPort"));
-//        configuration.set("hbase.hstore.flusher.count", getValue("hbase.hstore.flusher.count")); // 1
-//        configuration.set("hbase.client.write.buffer", getValue("hbase.client.write.buffer")); // 2m
-//
-//        configuration.set("hbase.client.retries.number", getValue("hbase.client.retries.number"));
-//        configuration.set("hbase.client.pause", getValue("hbase.client.pause"));
-//
-//        configuration.set("zookeeper.recovery.retry", getValue("zookeeper.recovery.retry"));
-//        configuration.set("zookeeper.recovery.retry.intervalmill", getValue("zookeeper.recovery.retry.intervalmill"));
+        // configuration.set("hbase.zookeeper.property.clientPort", getValue("hbase.zookeeper.property.clientPort"));
+        // configuration.set("hbase.hstore.flusher.count", getValue("hbase.hstore.flusher.count")); // 1
+        // configuration.set("hbase.client.write.buffer", getValue("hbase.client.write.buffer")); // 2m
+        //
+        // configuration.set("hbase.client.retries.number", getValue("hbase.client.retries.number"));
+        // configuration.set("hbase.client.pause", getValue("hbase.client.pause"));
+        //
+        // configuration.set("zookeeper.recovery.retry", getValue("zookeeper.recovery.retry"));
+        // configuration.set("zookeeper.recovery.retry.intervalmill",
+        // getValue("zookeeper.recovery.retry.intervalmill"));
 
         if (config != null && !config.isEmpty()) {
             for (String name: config.keySet()) {
