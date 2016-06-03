@@ -88,6 +88,7 @@ public class WordCount extends Configured implements Tool {
     public static void main(String[] args) {
         if (args.length < 2) {
             System.err.println("Usage: WordCount <in> <out>");
+            System.exit(2);
         }
         try {
             ToolRunner.run(new WordCount(), args);
